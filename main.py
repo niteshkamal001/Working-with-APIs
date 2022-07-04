@@ -7,7 +7,9 @@ from sqlalchemy import Column, Float, String, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 
-from . import models, schemas
+from . import models
+
+from . import schema 
 
 
 app = FastAPI()
@@ -31,6 +33,14 @@ def read_root():
 @app.post("/")
 def createemp(fname:str,lname:str,emp_id:str,city:str,age:int,contactno:int,experience:int):
     return{fname,lname,emp_id,city,age,contactno,experience}
+
+
+@app.post('/add_new_emp', response_model=schema.EmpAdd)
+def add_new_emp(emp: schema.EmpAdd, db: Session = Depends(get_db)):
+    employee_id = crud.get_emp_by_employee_id(db=db, employee_id=emp.employee_id)
+    if employee_id:
+        raise HTTPException(status_code=400, detail=f"Employee id {emp.employee_id} already exist in database: {employee_id}")
+    return crud.add_emp_details_to_db(db=db, emp=emp)
 
 
 class User(Base):
@@ -58,6 +68,7 @@ class Item(BaseModel):
 
 class Config:
     orm_mode = True
+
 
 
 
